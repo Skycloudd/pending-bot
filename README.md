@@ -1,2 +1,2 @@
-# src-pending-bot
+# Speedrun.com Pending Runs bot
  
