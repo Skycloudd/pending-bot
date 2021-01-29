@@ -7,41 +7,6 @@ from utility_functions import *
 api = 'https://www.speedrun.com/api/v1'
 
 
-def get_pending_count(ids):
-	counts = {"games": [], "total": 0}
-
-	for id in ids:
-		total = 0
-
-		offset = 0
-		while True:
-			url = f'{api}/runs?game={id}&status=new&max=200&offset={offset}'
-			data = make_request(url)
-
-			total += len(data["data"])
-
-			next = False
-
-			for link in data["pagination"]["links"]:
-				if link["rel"] == 'next':
-					next = True
-
-			if not next:
-				counts["games"].append(
-					{
-						"runs": total
-					}
-				)
-				break
-
-			offset += 200
-
-	total_runs = sum([game["runs"] for game in counts["games"]])
-	counts["total"] = total_runs
-
-	return counts
-
-
 def check_id(id):
 	url = f'{api}/games/{id}'
 	data = make_request(url)
@@ -74,3 +39,41 @@ def id_to_name(id):
 	data = make_request(url)
 
 	return data["data"]["names"]["international"]
+
+
+def get_pending_count(ids):
+	counts = {"games": [], "total": 0}
+
+	for id in ids:
+		total = 0
+
+		offset = 0
+		while True:
+			url = f'{api}/runs?game={id}&status=new&max=200&offset={offset}'
+			data = make_request(url)
+
+			total += len(data["data"])
+
+			next = False
+
+			for link in data["pagination"]["links"]:
+				if link["rel"] == 'next':
+					next = True
+
+			if not next:
+				counts["games"].append(
+					{
+						"runs": total,
+						"id": id,
+						"abbreviation": id_to_abbr(id),
+						"name": id_to_name(id)
+					}
+				)
+				break
+
+			offset += 200
+
+	total_runs = sum([game["runs"] for game in counts["games"]])
+	counts["total"] = total_runs
+
+	return counts
