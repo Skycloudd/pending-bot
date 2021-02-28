@@ -27,7 +27,47 @@ async def on_message(message):
 
 
 @bot.command()
-async def pending(ctx, *, games):
+async def runs(ctx, channel: discord.TextChannel, game: str):
+	await channel.purge(limit=None)
+
+	id = abbr_to_id(game)
+
+	if not id:
+		await ctx.send(f'that is an invalid game!')
+		return
+
+	runs = get_pending_runs(id)
+	for run in runs:
+		embed = discord.Embed(
+			title=run["category"],
+			url=run["weblink"]
+		)
+
+		embed.add_field(
+			name='Players',
+			value=run["players"],
+			inline=False
+		)
+
+		embed.add_field(
+			name='Time',
+			value=f'{run["time"]} seconds',
+			inline=False
+		)
+
+		await channel.send(embed=embed)
+
+	embed = discord.Embed(
+		title='Total runs',
+		description=f'{len(runs)} runs'
+	)
+
+	await channel.send(embed=embed)
+
+
+
+@bot.command()
+async def pending(ctx, *, games: str):
 	abbreviations = games.split()
 
 	ids = []

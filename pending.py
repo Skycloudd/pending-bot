@@ -77,3 +77,40 @@ def get_pending_count(ids):
 	counts["total"] = total_runs
 
 	return counts
+
+
+def get_pending_runs(id):
+	runs = []
+
+	offset = 0
+	while True:
+		url = f'{api}/runs?game={id}&status=new&max=200&offset={offset}&embed=players,game,category'
+		data = make_request(url)
+
+		for run in data["data"]:
+			players = []
+			for player in run["players"]["data"]:
+				if player["rel"] == 'user':
+					players.append(player["names"]["international"])
+				elif player["rel"] == 'guest':
+					players.append(player["name"])
+
+			runs.append({
+				"time": run["times"]["primary_t"],
+				"players": ', '.join(players),
+				"weblink": run["weblink"],
+				"category": run["category"]["data"]["name"]
+			})
+
+		next = False
+
+		for link in data["pagination"]["links"]:
+			if link["rel"] == 'next':
+				next = True
+
+		if not next:
+			break
+
+		offset += 200
+
+	return runs
